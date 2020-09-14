@@ -1,6 +1,8 @@
 Calculate psychrometric properties of moist air.
 
 MOTIVATION
+I have been working on this off and on for a few years now.  I am offering it now
+in the hope it might be use for others.
 
 
 REFFERENCES
@@ -9,13 +11,13 @@ REFFERENCES
 O. Parish and Terrill Putnam, "Equations for the Dertrmination of Humidy
 from the Dewpoint and Psychrometric Data" NASA Tech Note 
 
-+ a lot of googling
+
 
 
 STATUS AND USABILITY
 Defiately alpha
 All the PsyState functions have been spot checked and do produce 
-reasonable results, however
+reasonable results, however there is so much more that needs to done.
 
 
 
