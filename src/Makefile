@@ -20,5 +20,5 @@ svp.o : svp.c svp.h
 	$(CC) $(CFLAGS) -c svp.c -o svp.o 
 
 clean :
-	rm -f example *.o
+	rm -f example check *.o
 
