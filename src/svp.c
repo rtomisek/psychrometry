@@ -23,9 +23,8 @@
    of all psychrometric calcualtions. Several functions are available in
    the literature and some are given here.   
    
-   All these functions have been adjusted so that
-       Temperature T is in degrees Kelvin
-       Pressure p_sat is in Pascals
+   All these functions have been adjusted so that temperature T is 
+   in degrees Kelvin and vapor pressure p_sat is in Pascals
 */
 
 double p_sat( double T )   /* selects the equation to be used in following calculations */

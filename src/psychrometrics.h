@@ -39,6 +39,8 @@ enum errors
  *
  *   All units should be in SI.
  */
+
+/* NOTE: keep all temperatures below 100C, range check not yet implemented */
  
 typedef struct {
    double T_db;

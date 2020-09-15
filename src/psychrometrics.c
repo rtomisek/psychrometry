@@ -114,7 +114,7 @@ rc_RH( double RH )
 int
 rc_db( double t_db )
 {
-    if( t_db > -58 && t_db < 200 )  return NO_ERROR;
+    if( t_db > -58 && t_db < 100 )  return NO_ERROR;
     else                            return VAR_OUT_OF_RANGE;
 }
 int
