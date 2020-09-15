@@ -22,7 +22,6 @@
 
 
 
-
 static double 
 c_pa( void )
 {
