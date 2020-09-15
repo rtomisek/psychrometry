@@ -100,7 +100,7 @@ T_wet_bulb( double t_dp, double t_db, double P)
       }
       i = i + 1;
     }while( fabs(t2-t1) > 0.001 && i < 100);
-    printf("%d steps %f\n", i, t1);
+//    printf("%d steps %f\n", i, t1);
    return tm;
 }
 
@@ -361,6 +361,7 @@ P_wb_rh(PsyState *psy)                       /* ref:p21 */
 
    return NO_ERROR;
 }
+/* end of P_wb_rh */
 
 int 
 P_dp_rh(PsyState *psy)                   /* ref:p29 */

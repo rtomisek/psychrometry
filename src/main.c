@@ -21,8 +21,18 @@ main(void)
 {
     PsyState ps;
   
-    printf("by IAPWS - %f\n", p_IAPWS(350));
-    printf("by ASHRE - %f\n", p_ASH(350));    
-   
+    /* Example, figure dew point given dry bulb and RH
+     * We need to specify three variables so pressure is also given */
+
+    ps.P = 101325;  /* 1 atm in pascals */
+    ps.T_db = 27;
+    ps.RH = 80;
+
+    P_db_rh( &ps );  /* note: the fuction argument is a pointer to PsyState */
+
+    printf("The dew point is %f\n", ps.T_dew);
+    printf("or print the whole thing\n");
+    print_state( ps );    
+
     return 0;
 }
