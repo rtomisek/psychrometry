@@ -78,13 +78,21 @@ T_wet_bulb( double t_dp, double t_db, double P)
 {
    int i ;
    double t1, t2, tm;
-   double   f1, f2, fm;
-   
-   t1 = t_dp;         // wet bulb higher than dew point
-   t2 = t_db;         // wet bulb lower than dry bulb
+   double  f1, f2, fm;
+  
+
+   t1 = t_dp;         // wet bulb must be higher than dew point         
    f1 = T_wb_zero(t1, t_dp, t_db, P);
-   f2 = T_wb_zero(t2, t_dp, t_db, P);
-   if( f1*f2 > 0.0 ) { printf("ERROR: no root\n"); return 0; }
+   t2 = t1;
+   do
+   {
+     t2 = t2 + 1;
+     f2 = T_wb_zero(t2, t_dp, t_db, P);
+   }while( f1*f2 > 0.0 && t2 < t_db); 
+
+   // printf("%f  %f  %f  %f \n", t1,t2,f1,f2);
+
+   if( f1*f2 > 0.0 ) { printf("ERROR: no root\n"); return NO_ROOT; }
    i = 0;
    do{  
       tm = (t1 + t2) / 2;
@@ -99,31 +107,21 @@ T_wet_bulb( double t_dp, double t_db, double P)
           f1 = fm;
       }
       i = i + 1;
-    }while( fabs(t2-t1) > 0.001 && i < 100);
-//    printf("%d steps %f\n", i, t1);
+    }while( fabs(t2-t1) > 0.0001 && i < 100);
+    printf("%d steps %f\n", i, t1);
    return tm;
 }
 
-/*   range checking functions */
-int
-rc_RH( double RH )
-{
-    if( RH > 0 && RH < 100 )  return NO_ERROR;
-    else                      return VAR_OUT_OF_RANGE;
-}
-int
-rc_db( double t_db )
-{
-    if( t_db > -58 && t_db < 100 )  return NO_ERROR;
-    else                            return VAR_OUT_OF_RANGE;
-}
-int
-rc_W( double W )
-{
-    if( W > 0 && W < 0.1 )  return NO_ERROR;
-    else                    return VAR_OUT_OF_RANGE;
-}
+/*   range checking values */
 
+float min_db = -50;
+float max_db = 100;
+
+float min_RH = 0;
+float max_RH = 100;
+
+float min_W = 0;
+float max_W = 0.1; /* ?? */
 
 /*
     Start the definitions of the psycrometric state equations 
@@ -133,6 +131,9 @@ int
 P_db_dp( PsyState *psy)                    /* ref:p2 */
 {
    double p_ws, p_w, W, t_wb;
+
+   if( psy->T_db < min_db  || psy->T_db > max_db ) return VAR_OUT_OF_RANGE;
+   if( psy->T_dew >= psy->T_db ) return VAR_OUT_OF_RANGE;
 
    p_ws = p_sat(psy->T_db + 273.15);
    p_w = p_sat(psy->T_dew + 273.15);   
@@ -151,6 +152,9 @@ int
 P_db_W (PsyState *psy)                      /* ref:p3 */
 {
    double p_w, p_ws, t_dp, t_wb;
+
+   if( psy->T_db < min_db  || psy->T_db > max_db ) return VAR_OUT_OF_RANGE;
+
    
    p_ws = p_sat(psy->T_db + 273.15);
    p_w = psy->P*psy->W/(psy->W + 0.62198);
@@ -169,6 +173,9 @@ int
 P_db_wb(PsyState *psy)                     /* ref:p6 */
 {
    double p_ws, p_sat_wb, Wsat_wb, W, p_w;
+
+   if( psy->T_db < min_db  || psy->T_db > max_db ) return VAR_OUT_OF_RANGE;
+   if( psy->T_wb >= psy->T_db ) return VAR_OUT_OF_RANGE;
 
    p_ws = p_sat(psy->T_db + 273.15);
    p_sat_wb = p_sat(psy->T_wb + 273.15);
