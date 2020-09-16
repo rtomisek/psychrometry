@@ -57,8 +57,9 @@ W_p_pw( double p, double p_w)
 /* Find the wet bulb temperature given dry bulb, dew point and pressure.
    This procedure is needed several times and so it is given its own function
 */
-   /*  The T_wb_zero function is used by T_wet_bulb, it is 
-   the equation we are trying to find the root of
+   /*  The T_wb_zero is used by T_wet_bulb, it is the equation we are trying 
+    *  to find the root of. This function seems to have more than one root but
+    *  we want to use only the first one. 
    */
 static double
 T_wb_zero(double t_wb, double t_dp, double t_db, double P)
@@ -80,19 +81,19 @@ T_wet_bulb( double t_dp, double t_db, double P)
    double t1, t2, tm;
    double  f1, f2, fm;
   
-
-   t1 = t_dp;         // wet bulb must be higher than dew point         
+   /* try to bracket root  */
+   t1 = t_dp;         /* wet bulb must be higher than dew point so this will be lower point */     
    f1 = T_wb_zero(t1, t_dp, t_db, P);
    t2 = t1;
    do
    {
      t2 = t2 + 1;
      f2 = T_wb_zero(t2, t_dp, t_db, P);
-   }while( f1*f2 > 0.0 && t2 < t_db); 
+     if( t2 > t_db ) return NO_ROOT;
+   }while( f1*f2 > 0.0 ); 
 
-   // printf("%f  %f  %f  %f \n", t1,t2,f1,f2);
-
-   if( f1*f2 > 0.0 ) { printf("ERROR: no root\n"); return NO_ROOT; }
+   //printf("%f  %f  %f  %f \n", t1,t2,f1,f2);
+   /* home in on root using bisection */
    i = 0;
    do{  
       tm = (t1 + t2) / 2;
@@ -108,7 +109,7 @@ T_wet_bulb( double t_dp, double t_db, double P)
       }
       i = i + 1;
     }while( fabs(t2-t1) > 0.0001 && i < 100);
-    printf("%d steps %f\n", i, t1);
+    //printf("%d steps %f\n", i, t1);
    return tm;
 }
 
@@ -197,6 +198,11 @@ P_db_rh(PsyState *psy)                     /* ref:p8 */
 {
    double p_ws, p_w, W, t_dp, t_wb;
 
+   if( psy->RH < min_RH || psy->RH > max_RH) return VAR_OUT_OF_RANGE;
+
+   if( psy->T_db < min_db  || psy->T_db > max_db ) return VAR_OUT_OF_RANGE;
+   if( psy->RH < min_RH || psy->RH > max_RH) return VAR_OUT_OF_RANGE;
+
    p_ws = p_sat(psy->T_db + 273.15);
    p_w = p_ws * psy->RH/100 ;
    W = W_p_pw( psy->P, p_w ); 
@@ -216,6 +222,9 @@ P_db_h (PsyState *psy)              /* ref:p12 */
 {
    double p_ws, W, p_w, t_dp, t_wb;
    
+   if( psy->T_db < min_db  || psy->T_db > max_db ) return VAR_OUT_OF_RANGE;
+
+
    p_ws = p_sat(psy->T_db + 273.15);
    W = W_h_t( psy->h, psy->T_db);   
    p_w = psy->P*W / (W + 0.62198);
@@ -325,6 +334,8 @@ P_wb_rh(PsyState *psy)                       /* ref:p21 */
 {
    double p_sat_wb, Wsat_wb, t_db, p_ws, p_w, W;
    struct params pms;
+
+   if( psy->RH < min_RH || psy->RH > max_RH) return VAR_OUT_OF_RANGE;
    
    p_sat_wb = p_sat(psy->T_wb + 273.15);
    Wsat_wb = W_p_pw( psy->P, p_sat_wb) ;
@@ -375,6 +386,8 @@ P_dp_rh(PsyState *psy)                   /* ref:p29 */
 {
    double p_w, p_ws, t_db, W, t_wb;
 
+   if( psy->RH < min_RH || psy->RH > max_RH) return VAR_OUT_OF_RANGE;
+
    p_w = p_sat(psy->T_dew + 273.15);
    p_ws = 100*p_w/psy->RH;
    t_db = T_sat(p_ws) - 273.15;
@@ -412,6 +425,8 @@ int
 P_rh_W (PsyState *psy)                 /* ref:p32 */
 {
    double p_w, t_db, p_ws, t_dp, t_wb;
+
+   if( psy->RH < min_RH || psy->RH > max_RH) return VAR_OUT_OF_RANGE;
 
    p_w = psy->P*psy->W/(psy->W + 0.62198);
    p_ws = 100*p_w/psy->RH;  
@@ -506,6 +521,9 @@ W_rh_h  (PsyState *psy)                 /* ref:p35 */
 {
    double t_db, p_ws, p_w;
 
+   if( psy->RH < min_RH || psy->RH > max_RH) return VAR_OUT_OF_RANGE;
+
+
    t_db = (psy->h - 2501*psy->W) / (c_pa()  + 1.805*psy->W);
    p_ws = p_sat( t_db + 273.15);
    p_w = p_ws * psy->RH/100;
@@ -522,6 +540,9 @@ int
 db_h_dp(PsyState *psy)                 /* ref:p14 */
 {
    double p_ws, W, p_w, p_tot;
+
+   if( psy->T_db < min_db  || psy->T_db > max_db ) return VAR_OUT_OF_RANGE;
+   if( psy->T_dew > psy->T_db ) return VAR_OUT_OF_RANGE;
 
    p_ws = p_sat(psy->T_db + 273.15);
    W = (psy->h - c_pa()*psy->T_db) / (2501 + 1.805*psy->T_db);
@@ -562,6 +583,8 @@ dp_rh_h(PsyState *psy)                /* ref:p28 */
 {
    double p_w, p_ws, t_db, W;
 
+   if( psy->RH < min_RH || psy->RH > max_RH) return VAR_OUT_OF_RANGE;
+
    p_w = p_sat(psy->T_dew + 273.15);
    p_ws = 100*p_w / psy->RH;
    t_db = T_sat(p_ws) - 273.15;
@@ -598,7 +621,10 @@ int
 db_W_rh (PsyState *psy)                      /* ref:p4 */
 {
    double p_ws, p_w, p_tot;
-   
+  
+   if( psy->T_db < min_db  || psy->T_db > max_db ) return VAR_OUT_OF_RANGE;
+   if( psy->RH < min_RH || psy->RH > max_RH) return VAR_OUT_OF_RANGE;
+
    p_ws = p_sat(psy->T_db + 273.15);
    p_w = psy->RH * p_ws / 100;
    p_tot = p_w + 0.62198 * p_w / psy->W ; 
@@ -616,6 +642,9 @@ dp_W_rh(PsyState *psy)                /* ref:p27 */
 {
    double p_w, p_ws, t_db;
 
+   if( psy->RH < min_RH || psy->RH > max_RH) return VAR_OUT_OF_RANGE;
+
+
    p_w = p_sat(psy->T_dew + 273.15);
    p_ws = 100*p_w / psy->RH;
    t_db = T_sat(p_ws) - 273.15;
@@ -632,7 +661,10 @@ int
 db_rh_h (PsyState *psy)                      /* ref:p5 */
 {
    double p_ws, p_w, W, p_tot;
-   
+
+   if( psy->T_db < min_db  || psy->T_db > max_db ) return VAR_OUT_OF_RANGE;
+   if( psy->RH < min_RH || psy->RH > max_RH) return VAR_OUT_OF_RANGE;
+
    p_ws = p_sat(psy->T_db + 273.15);
    p_w = psy->RH * p_ws / 100;
    W = (psy->h - c_pa()*psy->T_db) / (2510 + 1.805*psy->T_db);
@@ -673,6 +705,9 @@ db_dp_W(PsyState *psy)             /* ref:p7 */
 {
    double p_ws, p_w, p_tot;
 
+   if( psy->T_db < min_db  || psy->T_db > max_db ) return VAR_OUT_OF_RANGE;
+   if( psy->T_dew > psy->T_db ) return VAR_OUT_OF_RANGE;
+
    p_ws = p_sat(psy->T_db + 273.15);
    p_w = p_sat(psy->T_dew + 273.15);
    p_tot = 0.62198*p_w / psy->W + p_w;
@@ -689,6 +724,9 @@ int
 db_wb_h(PsyState *psy)                 /* ref:p15 */
 {
    double p_ws, W, p_sat_wb, Ws_wb, p_tot, p_w;
+
+   if( psy->T_db < min_db  || psy->T_db > max_db ) return VAR_OUT_OF_RANGE;
+   if(psy->T_wb > psy->T_db ) return VAR_OUT_OF_RANGE;
 
    p_ws = p_sat(psy->T_db + 273.15);
    W = (psy->h - c_pa()*psy->T_db) / (2501 + 1.805*psy->T_db);
@@ -711,6 +749,9 @@ int
 db_wb_W(PsyState *psy)             /* ref:p10 */
 {
    double p_ws, p_sat_wb, W_s_wb, p_tot, p_w;
+
+   if( psy->T_db < min_db  || psy->T_db > max_db ) return VAR_OUT_OF_RANGE;
+   if(psy->T_wb > psy->T_db ) return VAR_OUT_OF_RANGE;
 
    p_ws = p_sat(psy->T_db + 273.15);
    p_sat_wb = p_sat(psy->T_wb + 273.15);
