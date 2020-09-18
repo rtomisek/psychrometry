@@ -155,10 +155,9 @@ P_db_W (PsyState *psy)                      /* ref:p3 */
    double p_w, p_ws, t_dp, t_wb;
 
    if( psy->T_db < min_db  || psy->T_db > max_db ) return VAR_OUT_OF_RANGE;
-
    
    p_ws = p_sat(psy->T_db + 273.15);
-   p_w = psy->P*psy->W/(psy->W + 0.62198);
+   p_w = psy->P*psy->W/(psy->W + 0.62198);    
    t_dp = T_sat(p_w) - 273.15;
    t_wb = T_wet_bulb(t_dp, psy->T_db, psy->P);
  
@@ -171,14 +170,14 @@ P_db_W (PsyState *psy)                      /* ref:p3 */
 }
 
 int
-P_db_wb(PsyState *psy)                     /* ref:p6 */
+P_db_wb(PsyState *psy)                     /* ref:p6 */               
 {
    double p_ws, p_sat_wb, Wsat_wb, W, p_w;
 
    if( psy->T_db < min_db  || psy->T_db > max_db ) return VAR_OUT_OF_RANGE;
    if( psy->T_wb >= psy->T_db ) return VAR_OUT_OF_RANGE;
-
-   p_ws = p_sat(psy->T_db + 273.15);
+                                                                            // this function does not work when
+   p_ws = p_sat(psy->T_db + 273.15);                                        // wb is very low ie off the chart
    p_sat_wb = p_sat(psy->T_wb + 273.15);
    Wsat_wb = W_p_pw( psy->P, p_sat_wb );
    W = (Wsat_wb*(2501-2.381*psy->T_wb) - c_pa()*(psy->T_db - psy->T_wb))/
@@ -197,8 +196,6 @@ int
 P_db_rh(PsyState *psy)                     /* ref:p8 */
 {
    double p_ws, p_w, W, t_dp, t_wb;
-
-   if( psy->RH < min_RH || psy->RH > max_RH) return VAR_OUT_OF_RANGE;
 
    if( psy->T_db < min_db  || psy->T_db > max_db ) return VAR_OUT_OF_RANGE;
    if( psy->RH < min_RH || psy->RH > max_RH) return VAR_OUT_OF_RANGE;
@@ -225,7 +222,7 @@ P_db_h (PsyState *psy)              /* ref:p12 */
    if( psy->T_db < min_db  || psy->T_db > max_db ) return VAR_OUT_OF_RANGE;
 
 
-   p_ws = p_sat(psy->T_db + 273.15);
+   p_ws = p_sat(psy->T_db + 273.15);        // agrees with chart. problems when h is low
    W = W_h_t( psy->h, psy->T_db);   
    p_w = psy->P*W / (W + 0.62198);
    t_dp = T_sat(p_w) - 273.15;
@@ -243,6 +240,8 @@ int
 P_wb_dp(PsyState *psy)                     /* ref:p16 */
 {
    double p_w, p_sat_wb, Wsat_wb, W, t_db, p_ws;
+
+   if( psy->T_wb < psy->T_dew ) return VAR_OUT_OF_RANGE; // useable range unclear, easy to go off the chart
 
    p_w = p_sat(psy->T_dew + 273.15);
    p_sat_wb = p_sat(psy->T_wb + 273.15);
@@ -265,7 +264,7 @@ int
 P_wb_W (PsyState *psy)              /* ref:p17 */
 {
    double p_w, t_dp, p_sat_wb, Wsat_wb, t_db, p_ws;
- 
+                                                      // easy to go off chart
    p_w = psy->P*psy->W / (psy->W + 0.62198);
    t_dp = T_sat(p_w) - 273.15;
    p_sat_wb = p_sat(psy->T_wb + 273.15);
@@ -283,29 +282,6 @@ P_wb_W (PsyState *psy)              /* ref:p17 */
    return NO_ERROR;
 }
 
-/* this one has problems with accuracy because the wet bulb and 
-   enthapy lines are nearly parallel  */
-int 
-P_wb_h (PsyState *psy)                 /* ref:p24 */
-{
-   double p_sat_wb, Wsat_wb, W, p_w, t_dp, t_db, p_ws;
-
-   p_sat_wb = p_sat(psy->T_wb + 273.15);
-   Wsat_wb = W_p_pw( psy->P, p_sat_wb); 
-   W = (psy->h - (psy->T_wb + Wsat_wb * (2501 + 1.805*psy->T_wb)))  
-       / (4.184*psy->T_wb*psy->h) + Wsat_wb;
-   p_w = psy->P * W / (W + 0.62198);
-   t_dp = T_sat( p_w ) - 273.15;
-   t_db = (psy->h - 2501*W) / (c_pa() + 1.805*W);
-   p_ws = p_sat(t_db + 273.15);
-   
-   psy->RH = 100*p_w/p_ws;
-   psy->W = W;
-   psy->T_db = t_db;
-   psy->T_dew = t_dp;
-
-   return NO_ERROR;
-}
 
 /* P_wb_rh is complicated; we need to solve for the dry bulb temerature
    by finding a root. This function is called zero1, params contains 
@@ -406,7 +382,8 @@ int
 P_dp_h (PsyState *psy)              /* ref:p31 */
 {
    double p_w, W, t_db, p_ws, t_wb;
-
+                                       // invalid combinations possible
+				       // ok if you stay on the chart
    p_w = p_sat(psy->T_dew + 273.15);
    W = W_p_pw( psy->P, p_w);  
    t_db = (psy->h - 2501*W)/(c_pa() + 1.805*W);
@@ -446,8 +423,8 @@ int
 P_W_h  (PsyState *psy)                 /* ref:p34 */
 {
    double t_db, p_ws, p_w, t_dp;
-
-   t_db = (psy->h - 2501*psy->W)/(c_pa() - 1.805*psy->W);
+                                                          // invalid combinations possible
+   t_db = (psy->h - 2501*psy->W)/(c_pa() + 1.805*psy->W);
    p_ws = p_sat(t_db + 273.15);
    p_w = psy->P*psy->W/(psy->W + 0.62198);
    t_dp = T_sat(p_w) - 273.15;
@@ -481,9 +458,12 @@ int P_rh_h (PsyState *psy)            /* ref:p33 */
    double t_db, p_w, W, t_dp;
    
    double t_l, t_r, t_m, f_l, f_r, f_m;
+   
+   if( psy->RH < min_RH || psy->RH > max_RH ) return VAR_OUT_OF_RANGE;
+   
    int i = 0;
   
-   /* have to guess limits with no clues */
+   /* NOTE: I have to guess limits with no clues. How to improve?? */
    t_l = -40;
    t_r = 100;
    f_l = zero2( t_l, psy->h, psy->RH, psy->P);      
@@ -522,7 +502,6 @@ W_rh_h  (PsyState *psy)                 /* ref:p35 */
    double t_db, p_ws, p_w;
 
    if( psy->RH < min_RH || psy->RH > max_RH) return VAR_OUT_OF_RANGE;
-
 
    t_db = (psy->h - 2501*psy->W) / (c_pa()  + 1.805*psy->W);
    p_ws = p_sat( t_db + 273.15);
