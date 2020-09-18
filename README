@@ -1,7 +1,7 @@
 Calculate psychrometric properties of moist air.
 
 MOTIVATION
-I have been working on this off and on for a few years now.  I am offering it now
+I have been working on this off and on for a few years.  I am offering it now
 in the hope it might be useful for others.
 
 
@@ -11,17 +11,18 @@ REFFERENCES
 O. Parish and Terrill Putnam, "Equations for the Dertrmination of Humidy
 from the Dewpoint and Psychrometric Data" NASA Tech Note 
 
-"Humidity Conversion Formulas", Vaisala 2013
+"Humidity Conversion Formulas", Vaisala, 2013
 
 
 
 STATUS AND USABILITY
 Definately pre-alpha
-The PsyState functions that use P have been checked and generally give reasonable results but
-in some cases invalid combinations are possible. Some range checking is in place but it is incomplete.
+The PsyState functions that use P have been checked and generally give 
+reasonable results but in some cases invalid combinations are possible. 
 
-Function that calculate a P have not been as thuroughly checked because I don't have 
-charts for comparison
+Some range checking is in place but it is incomplete.
 
+Functions that calculate P have been spot checked, so they work but the  
+P calculated may not be very accurate
 
 
