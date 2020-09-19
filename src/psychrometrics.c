@@ -29,25 +29,25 @@ c_pa( void )
 }
 
 static double
-v_sp( double T, double P, double W)
+v_sp( double T, double P, double W)   /* specific volume */
 {
     return  0.287055*T*( 1.0 + 1.6078*W ) / P   ;
 }
 
-static double
-h_W_db(double W, double t_db)
+static double                 /* E4a */
+h_W_db(double W, double t_db) /* enthalpy given W and dry bulb */
 {
   return c_pa()*t_db + W*(2501 + 1.805*t_db);
 }
 
-static double
-W_h_t(double h, double t_db)
+static double                  /* E4c */
+W_h_t(double h, double t_db)   /* humidity ratio given enthalpy and dry bulb */
 {
    return  (h - c_pa() * t_db) / ( 2501 + 1.805 * t_db) ;
 }
 
-static double
-W_p_pw( double p, double p_w)
+static double                  /* E5 */ 
+W_p_pw( double p, double p_w)  /* humidity ratio given pressure and vp */
 {
     return 0.62198*( p_w / ( p - p_w ));
 }
@@ -82,8 +82,10 @@ T_wet_bulb( double t_dp, double t_db, double P)
    double  f1, f2, fm;
   
    /* try to bracket root  */
-   t1 = t_dp;         /* wet bulb must be higher than dew point so this will be lower point */     
+   t1 = t_dp;         /* dew point must be lower than wet bulb */     
+                      /* so this is a good lower value */
    f1 = T_wb_zero(t1, t_dp, t_db, P);
+   /* go in steps until sign changes */
    t2 = t1;
    do
    {
@@ -115,8 +117,8 @@ T_wet_bulb( double t_dp, double t_db, double P)
 
 /*   range checking values */
 
-float min_db = -50;
-float max_db = 100;
+float min_db = -10;
+float max_db = 110;
 
 float min_RH = 0;
 float max_RH = 100;
@@ -176,8 +178,8 @@ P_db_wb(PsyState *psy)                     /* ref:p6 */
 
    if( psy->T_db < min_db  || psy->T_db > max_db ) return VAR_OUT_OF_RANGE;
    if( psy->T_wb >= psy->T_db ) return VAR_OUT_OF_RANGE;
-                                                                            // this function does not work when
-   p_ws = p_sat(psy->T_db + 273.15);                                        // wb is very low ie off the chart
+                                            // this function does not work when
+   p_ws = p_sat(psy->T_db + 273.15);         // wb is very low ie off the chart
    p_sat_wb = p_sat(psy->T_wb + 273.15);
    Wsat_wb = W_p_pw( psy->P, p_sat_wb );
    W = (Wsat_wb*(2501-2.381*psy->T_wb) - c_pa()*(psy->T_db - psy->T_wb))/
@@ -222,7 +224,7 @@ P_db_h (PsyState *psy)              /* ref:p12 */
    if( psy->T_db < min_db  || psy->T_db > max_db ) return VAR_OUT_OF_RANGE;
 
 
-   p_ws = p_sat(psy->T_db + 273.15);        // agrees with chart. problems when h is low
+   p_ws = p_sat(psy->T_db + 273.15);        //  problems when h is low
    W = W_h_t( psy->h, psy->T_db);   
    p_w = psy->P*W / (W + 0.62198);
    t_dp = T_sat(p_w) - 273.15;
@@ -423,7 +425,7 @@ int
 P_W_h  (PsyState *psy)                 /* ref:p34 */
 {
    double t_db, p_ws, p_w, t_dp;
-                                                          // invalid combinations possible
+                                               // invalid combinations possible
    t_db = (psy->h - 2501*psy->W)/(c_pa() + 1.805*psy->W);
    p_ws = p_sat(t_db + 273.15);
    p_w = psy->P*psy->W/(psy->W + 0.62198);
