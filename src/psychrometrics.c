@@ -157,7 +157,8 @@ P_db_W (PsyState *psy)                      /* ref:p3 */
    double p_w, p_ws, t_dp, t_wb;
 
    if( psy->T_db < min_db  || psy->T_db > max_db ) return VAR_OUT_OF_RANGE;
-   
+                 // invalid combinations possible
+
    p_ws = p_sat(psy->T_db + 273.15);
    p_w = psy->P*psy->W/(psy->W + 0.62198);    
    t_dp = T_sat(p_w) - 273.15;
@@ -178,8 +179,8 @@ P_db_wb(PsyState *psy)                     /* ref:p6 */
 
    if( psy->T_db < min_db  || psy->T_db > max_db ) return VAR_OUT_OF_RANGE;
    if( psy->T_wb >= psy->T_db ) return VAR_OUT_OF_RANGE;
-                                            // this function does not work when
-   p_ws = p_sat(psy->T_db + 273.15);         // wb is very low ie off the chart
+                                            
+   p_ws = p_sat(psy->T_db + 273.15);         
    p_sat_wb = p_sat(psy->T_wb + 273.15);
    Wsat_wb = W_p_pw( psy->P, p_sat_wb );
    W = (Wsat_wb*(2501-2.381*psy->T_wb) - c_pa()*(psy->T_db - psy->T_wb))/
@@ -222,9 +223,9 @@ P_db_h (PsyState *psy)              /* ref:p12 */
    double p_ws, W, p_w, t_dp, t_wb;
    
    if( psy->T_db < min_db  || psy->T_db > max_db ) return VAR_OUT_OF_RANGE;
+   // h can be too high 
 
-
-   p_ws = p_sat(psy->T_db + 273.15);        //  problems when h is low
+   p_ws = p_sat(psy->T_db + 273.15);       
    W = W_h_t( psy->h, psy->T_db);   
    p_w = psy->P*W / (W + 0.62198);
    t_dp = T_sat(p_w) - 273.15;
@@ -243,7 +244,7 @@ P_wb_dp(PsyState *psy)                     /* ref:p16 */
 {
    double p_w, p_sat_wb, Wsat_wb, W, t_db, p_ws;
 
-   if( psy->T_wb < psy->T_dew ) return VAR_OUT_OF_RANGE; // useable range unclear, easy to go off the chart
+   if( psy->T_wb < psy->T_dew ) return VAR_OUT_OF_RANGE; 
 
    p_w = p_sat(psy->T_dew + 273.15);
    p_sat_wb = p_sat(psy->T_wb + 273.15);
@@ -266,7 +267,7 @@ int
 P_wb_W (PsyState *psy)              /* ref:p17 */
 {
    double p_w, t_dp, p_sat_wb, Wsat_wb, t_db, p_ws;
-                                                      // easy to go off chart
+                                                      // wb can be too low
    p_w = psy->P*psy->W / (psy->W + 0.62198);
    t_dp = T_sat(p_w) - 273.15;
    p_sat_wb = p_sat(psy->T_wb + 273.15);
@@ -326,11 +327,11 @@ P_wb_rh(PsyState *psy)                       /* ref:p21 */
    double t_l, t_r, t_m, f_l, f_r, f_m;
    int i = 0;
   
-   t_l = psy->T_wb;     /* this should be less than t_db */
+   t_l = psy->T_wb;   /* wb less than db, good guess for lower limit */
    t_r = t_l + 50;      /* 50 arbitrary number, UGH */  
    f_l = zero1( t_l, pms);      
    f_r = zero1( t_r, pms);
-   if( f_l*f_r > 0.0 ) printf("ERROR root in zero1") ;
+   if( f_l*f_r > 0.0 ) return NO_ROOT;
    do{
       t_m =  (t_r + t_l) / 2;
       f_m = zero1( t_m, pms);
@@ -385,7 +386,7 @@ P_dp_h (PsyState *psy)              /* ref:p31 */
 {
    double p_w, W, t_db, p_ws, t_wb;
                                        // invalid combinations possible
-				       // ok if you stay on the chart
+				       // h can be too low
    p_w = p_sat(psy->T_dew + 273.15);
    W = W_p_pw( psy->P, p_w);  
    t_db = (psy->h - 2501*W)/(c_pa() + 1.805*W);
@@ -426,6 +427,7 @@ P_W_h  (PsyState *psy)                 /* ref:p34 */
 {
    double t_db, p_ws, p_w, t_dp;
                                                // invalid combinations possible
+					       // h can be too low
    t_db = (psy->h - 2501*psy->W)/(c_pa() + 1.805*psy->W);
    p_ws = p_sat(t_db + 273.15);
    p_w = psy->P*psy->W/(psy->W + 0.62198);
