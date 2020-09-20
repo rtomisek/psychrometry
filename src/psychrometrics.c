@@ -61,6 +61,9 @@ W_p_pw( double p, double p_w)  /* humidity ratio given pressure and vp */
     *  to find the root of. This function seems to have more than one root but
     *  we want to use only the first one. 
    */
+
+static int wb_NO_ROOT = 0; /* error checking hack */
+
 static double
 T_wb_zero(double t_wb, double t_dp, double t_db, double P)
 {
@@ -91,10 +94,9 @@ T_wet_bulb( double t_dp, double t_db, double P)
    {
      t2 = t2 + 1;
      f2 = T_wb_zero(t2, t_dp, t_db, P);
-     if( t2 > t_db ) return NO_ROOT;
+     if( t2 > t_db ) wb_NO_ROOT=1; 
    }while( f1*f2 > 0.0 ); 
 
-   //printf("%f  %f  %f  %f \n", t1,t2,f1,f2);
    /* home in on root using bisection */
    i = 0;
    do{  
@@ -111,9 +113,10 @@ T_wet_bulb( double t_dp, double t_db, double P)
       }
       i = i + 1;
     }while( fabs(t2-t1) > 0.0001 && i < 100);
-    //printf("%d steps %f\n", i, t1);
    return tm;
 }
+/* end T_wet_bulb */
+
 
 /*   range checking values */
 
@@ -295,7 +298,7 @@ struct params{
     double rh;
     double P;  };
 
-double 
+static double 
 zero1( double t_db, struct params pms)
 {
    double p_ws, p_w, W, z;
@@ -443,7 +446,7 @@ P_W_h  (PsyState *psy)                 /* ref:p34 */
 
 /* P_rh_h needs to find dry bulb temperature by the root 
    of a function called zero2 */
-double
+static double
 zero2(double t_db, double h, double RH, double P)
 {  
    double p_ws, p_w, W, z;
