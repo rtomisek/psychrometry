@@ -14,15 +14,15 @@ from the Dewpoint and Psychrometric Data" NASA Tech Note
 "Humidity Conversion Formulas", Vaisala, 2013
 
 
-
 STATUS AND USABILITY
 Definately pre-alpha
-The PsyState functions that use P have been checked and generally give 
-reasonable results but in some cases invalid combinations are possible. 
+All the PsyState functions that use P have been implemented. They have been 
+checked and generally give good results; however in some cases invalid combinations 
+are possible. 
 
 Some range checking is in place but it is incomplete.
 
 Functions that calculate P have been spot checked, so they work but the  
-P calculated may not be very accurate
+P calculated may not be very accurate.
 
 
