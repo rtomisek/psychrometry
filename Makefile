@@ -1,0 +1,4 @@
+
+subsystem:
+	cd src && $(MAKE)
+        

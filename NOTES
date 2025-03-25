@@ -1,0 +1,48 @@
+VARIABLES AND EQUATIONS USED IN THE PROGRAM
+
+    c_pa            heat capacity of air
+    h               enthalpy
+
+    p_w             partial pressure of water in moist air
+    p_ws            partial pressure of saturated water
+    p_tot           total pressure
+    p_sat_wb        saturated partial pressure at the wet bulb temp.
+
+    rh              relative humidity as fraction
+    RH              relative humidity as percent
+
+    t_db            dry bulb temperature
+    t_dp            dew point temperature
+    t_wb            wet bulb temperature
+
+    W               humidity ratio, absolute humidity
+    Wsat_wb         W calculated with p_sat_wb
+
+    E1              p_sat( T )
+                    given temperature returns saturated vapor pressure.
+                    Note that
+       a                p_ws = p_sat( t_db )
+       b                p_w  = p_sat( t_dp )
+       c                p_sat_wb = p_sat( t_wb )
+                        
+    E2              T_sat( p )
+                    given the partial pressure returns the temperature
+                    As above note that
+       a                t_db = T_sat( p_ws )
+       b                t_dp = T_sat( p_w )
+       
+    E3 a            rh = p_w / p_ws
+                    basically the definiton of rh
+                    can be rearranged to get
+       b            p_w = rh * p_ws
+       c            p_ws = p_w / p_w
+       
+    E4a             h = c_pa * t_db  +  W * ( 2501 + 1.805 * t_db ) 
+       
+      b             t_db =  ( h - 2501 * W ) / ( c_pa + 1.805 * W )
+      c             W = ( h - c_pa *t_db ) / ( 2501 + 1.805 * t_db )  
+       
+    E5		    W = 0.62198 * p_w / ( p - p_w )
+
+       
+                    v_sp = 0.287055*T*( 1.0 + 1.6078*W ) / P
