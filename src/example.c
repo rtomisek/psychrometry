@@ -28,7 +28,7 @@ main(void)
 
     ps.P = 101325;  /* 1 atm in pascals */
     ps.T_db = 47;   /* dry bulb should be below 100C */
-    ps.RH = 80;
+    ps.RH = 180;
 
     r = P_db_rh( &ps );  /* note: the fuction argument is a pointer to PsyState */
     printf("Return value is %d\n", r);
