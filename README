@@ -15,8 +15,8 @@ from the Dewpoint and Psychrometric Data" NASA Tech Note
 
 
 STATUS AND USABILITY
-Definately pre-alpha
-All the PsyState functions that use P have been implemented. They have been 
+Definately alpha. I calling it v0.5.
+All the PsyState functions that use P have been implemented. They have been spot 
 checked and generally give good results; however in some cases invalid combinations 
 are possible. 
 
