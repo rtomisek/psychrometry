@@ -68,7 +68,7 @@ double p_ASH(double T)
       B = -0.1866650553E-1;
       C =  0.2683629403E2;
       D = -0.6316972063E4;
-   }  else if( T < 473.15 )
+   }  else if( T <= 473.15 )
    {
       A =  0.1069730183E-4;
       B = -0.1698965754E-1;
@@ -237,16 +237,14 @@ T_ASH(double p_wsat)
 double 
 T_sat(double p_wsat)
 {
-   int i=0;
+   unsigned int i=0;
+   double tol=0.001;
    double t_m, t_1, t_2, f_m, f_1, f_2;
-   double tol;
-
-   tol = 0.01;
 
    t_1 = 213.15;
-   f_1 = p_sat(213.15) - p_wsat;
+   f_1 = p_sat(t_1) - p_wsat;
    t_2 = 473.15;
-   f_2 = p_sat(473.15) - p_wsat;
+   // f_2 = p_sat(t_2) - p_wsat;
 
    do{
       t_m =  (t_2 + t_1) / 2;
@@ -257,7 +255,7 @@ T_sat(double p_wsat)
       }
       else{
          t_1 = t_m;
-         f_1 = f_m;  
+         f_1 = f_m;
       }
       i = i + 1;
     }while( fabs( (t_1-t_2)/2 ) > tol && i < 100);

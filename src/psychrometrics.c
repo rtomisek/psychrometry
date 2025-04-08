@@ -28,11 +28,13 @@ c_pa( void )
    return 1.006;
 }
 
+/*
 static double
-v_sp( double T, double P, double W)   /* specific volume */
+v_sp( double T, double P, double W)      // specific volume 
 {
     return  0.287055*T*( 1.0 + 1.6078*W ) / P   ;
 }
+*/
 
 static double                 /* E4a */
 h_W_db(double W, double t_db) /* enthalpy given W and dry bulb */
