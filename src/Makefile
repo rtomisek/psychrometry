@@ -2,7 +2,14 @@
 CC=gcc
 CFLAGS= -std=c99 -Wall
 
-all : example
+all : example chart
+
+
+chart  : chart.o svp.o psychrometrics.o
+	$(CC) $(CFLAGS) -o chart chart.o svp.o psychrometrics.o -lm
+
+chart.o : chart.c psychrometrics.h
+	$(CC) $(CFLAGS) -c chart.c
 
 example : example.o svp.o psychrometrics.o
 	$(CC) $(CFLAGS) -o example example.o svp.o psychrometrics.o -lm

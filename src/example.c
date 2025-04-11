@@ -1,5 +1,6 @@
 
 #include <stdio.h>
+#include <locale.h>
 
 #include "psychrometrics.h"
 #include "svp.h"
@@ -27,8 +28,8 @@ main(void)
      * We need to specify three variables so pressure is also given */
 
     ps.P = 101325;  /* 1 atm in pascals */
-    ps.T_db = 47;   /* dry bulb should be below 100C */
-    ps.RH = 180;
+    ps.T_db = 25;   /* dry bulb should be below 100C */
+    ps.RH = 45;
 
     r = P_db_rh( &ps );  /* note: the fuction argument is a pointer to PsyState */
     printf("Return value is %d\n", r);
@@ -36,7 +37,9 @@ main(void)
 
     printf("The dew point is %f\n\n", ps.T_dew);
     printf("or print the whole thing\n");
-    print_state( ps );    
+    print_state( ps );      
+
+    printf("%12.4f\n",p_sat(300));
 
     return 0;
 }
